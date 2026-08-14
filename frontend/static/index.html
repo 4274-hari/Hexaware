@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GovPulse AI - Civic Grievance Triage</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">GP</span>
+      <div>
+        <h1>GovPulse AI</h1>
+        <p>Civic Grievance Triage System</p>
+      </div>
+    </div>
+    <div class="status-chip" id="serverStatus">
+      <span class="dot"></span> Connecting...
+    </div>
+  </header>
+
+  <main class="layout">
+    <nav class="tabs">
+      <button class="tab active" data-tab="report">Report an Issue</button>
+      <button class="tab" data-tab="track">Track Complaints</button>
+    </nav>
+
+    <section id="tab-report" class="panel active">
+      <div class="card input-card">
+        <h2>Describe your problem</h2>
+        <p class="hint">Works with English, Tamil, Tanglish, Hindi &amp; code-mixed speech.</p>
+        <textarea id="grievanceText" rows="4"
+          placeholder="e.g. Anna nagar la electric wire sparking aaguthu, kids risk la irukkaanga"></textarea>
+        <div class="row">
+          <button id="btnSubmit" class="btn primary">Analyze Text</button>
+          <button id="btnMic" class="btn secondary">
+            <span id="micIcon">&#127908;</span> <span id="micLabel">Record Voice</span>
+          </button>
+          <span id="recTimer" class="rec-timer hidden">Recording... 0s</span>
+        </div>
+        <div id="formMsg" class="msg hidden"></div>
+      </div>
+
+      <div id="resultArea" class="hidden">
+        <div id="spinner" class="spinner hidden"><span></span> Processing your grievance...</div>
+        <div id="cardResult"></div>
+      </div>
+    </section>
+
+    <section id="tab-track" class="panel">
+      <div class="card">
+        <h2>Complaint Dashboard</h2>
+        <div id="stats" class="stats"></div>
+        <div class="filters">
+          <input id="searchBox" type="text" placeholder="Search transcript / landmark / ID..." />
+          <select id="deptFilter">
+            <option value="">All Departments</option>
+            <option>Municipal Corporation &amp; Sanitation</option>
+            <option>Public Works (PWD) &amp; Roads</option>
+            <option>Water Supply &amp; Sewerage Board</option>
+            <option>Electricity &amp; Power Distribution</option>
+            <option>Traffic &amp; Urban Mobility</option>
+          </select>
+          <select id="prioFilter">
+            <option value="">All Priorities</option>
+            <option>P1-Emergency</option>
+            <option>P2-High</option>
+            <option>P3-Medium</option>
+            <option>P4-Low</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table id="complaintsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Department</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Risk</th>
+                <th>Landmark</th>
+                <th>Language</th>
+                <th>When</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p id="emptyMsg" class="empty hidden">No complaints yet. Report one!</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
