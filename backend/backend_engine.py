@@ -13,6 +13,12 @@ from prompt_templates import FEW_SHOT_EXAMPLES, SYSTEM_PROMPT
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+for stream in (sys.stdout, sys.stderr):
+    try:
+        stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 REQUIRED_KEYS = [
     "complaint_id",
     "raw_transcript",
@@ -33,13 +39,14 @@ VALID_DEPARTMENTS = {
     "Water Supply & Sewerage Board",
     "Electricity & Power Distribution",
     "Traffic & Urban Mobility",
+    "Disaster Management",
 }
 
 VALID_PRIORITIES = {"P1-Emergency", "P2-High", "P3-Medium", "P4-Low"}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STORE_FILE = os.path.join(BASE_DIR, "complaints_store.json")
-
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 GROQ_MODEL = "llama-3.3-70b-versatile"
 OLLAMA_DEFAULT_MODEL = "llama3.2:latest"
 OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
@@ -71,8 +78,8 @@ def _call_ollama(model: str, messages: list) -> str:
         "format": "json",
         "keep_alive": -1,
         "options": {
-            "num_predict": 500,
-            "num_ctx": 4096,
+            "num_predict": 250,
+            "num_ctx": 2048,
         },
     }
     request = urllib.request.Request(
@@ -80,7 +87,7 @@ def _call_ollama(model: str, messages: list) -> str:
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(request, timeout=120) as response:
+    with urllib.request.urlopen(request, timeout=300) as response:
         data = json.loads(response.read().decode("utf-8"))
     return data["message"]["content"]
 
@@ -154,7 +161,19 @@ def _normalize_record(record: dict, transcript_text: str) -> dict:
 
 
 def process_grievance_text(transcript_text: str) -> dict:
+    record = classify_grievance_text(transcript_text)
+    if record is None:
+        return None
     complaint_id = next_complaint_id()
+    record["complaint_id"] = complaint_id
+    record["created_at"] = datetime.now(timezone.utc).isoformat()
+    if record["is_civic_related"]:
+        save_complaint_to_store(record)
+    return record
+
+
+def classify_grievance_text(transcript_text: str) -> dict | None:
+    """Classification-only API used by the FastAPI service; does not write JSON files."""
 
     try:
         if _provider() == "ollama":
@@ -180,13 +199,6 @@ def process_grievance_text(transcript_text: str) -> dict:
         return None
 
     record = _normalize_record(record, transcript_text)
-    record["complaint_id"] = complaint_id
-    record["created_at"] = datetime.now(timezone.utc).isoformat()
-
-    if not record["is_civic_related"]:
-        return record
-
-    save_complaint_to_store(record)
     return record
 
 
@@ -291,7 +303,7 @@ def _process_and_report(transcript: str) -> None:
         print(f"\n[ERROR] Could not process grievance. Latency: {elapsed_ms:.2f} ms\n")
 
 
-def run_stt_once(stt_mode: str, audio_file: str) -> None:
+def run_stt_once(stt_mode: str, audio_file: str, language: str = None) -> None:
     try:
         from stt.stt_engine import transcribe_audio_file, transcribe_from_mic
     except ImportError:
@@ -310,7 +322,7 @@ def run_stt_once(stt_mode: str, audio_file: str) -> None:
         if stt_mode == "mic":
             transcript = transcribe_from_mic()
         else:
-            transcript = transcribe_audio_file(audio_file)
+            transcript = transcribe_audio_file(audio_file, language=language)
     except Exception as exc:
         print(f"[ERROR] Audio capture/transcription failed: {exc}")
         sys.exit(1)
@@ -335,8 +347,14 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--file",
+        "--call-file",
+        dest="audio_file",
         metavar="AUDIO_FILE",
-        help="Transcribe an audio file (call recording) and process",
+        help="Transcribe an audio file (call recording: MP3/M4A/WAV) and process",
+    )
+    parser.add_argument(
+        "--language",
+        help="STT language hint: en, te, ta, hi, kn, ml ... (default: auto-detect)",
     )
     args = parser.parse_args()
 
@@ -351,8 +369,8 @@ if __name__ == "__main__":
             print("=" * 64)
             sys.exit(1)
 
-    if args.stt or args.file:
-        run_stt_once("mic" if args.stt else "file", args.file)
+    if args.stt or args.audio_file:
+        run_stt_once("mic" if args.stt else "file", args.audio_file, args.language)
         sys.exit(0)
 
     interactive_cli()
