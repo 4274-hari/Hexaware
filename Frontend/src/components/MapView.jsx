@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 
 const SECTOR_COORDINATES = {
-  'gandhi circle': { x: 50, y: 48, label: 'Gandhi Circle (Central)' },
-  'anna nagar': { x: 26, y: 28, label: 'Anna Nagar (North-West)' },
-  't nagar': { x: 42, y: 68, label: 'T. Nagar (Commercial Zone)' },
-  'mg road': { x: 74, y: 72, label: 'MG Road (Corridor)' },
-  'market street': { x: 76, y: 38, label: 'Market Street (East Ward)' },
-  'ring road': { x: 22, y: 74, label: 'Ring Road Expressway' },
-  'central station': { x: 58, y: 36, label: 'Central Railway Station' },
-  'bus stand': { x: 18, y: 42, label: 'Main Bus Terminus' },
+  'gandhi circle': { x: 50, y: 48, label: 'Gandhi Circle' },
+  'anna nagar': { x: 26, y: 28, label: 'Anna Nagar' },
+  't nagar': { x: 42, y: 68, label: 'T. Nagar' },
+  'mg road': { x: 74, y: 72, label: 'MG Road' },
+  'market street': { x: 76, y: 38, label: 'Market Street' },
+  'ring road': { x: 22, y: 74, label: 'Ring Road' },
+  'central station': { x: 58, y: 36, label: 'Central Station' },
+  'bus stand': { x: 18, y: 42, label: 'Bus Terminus' },
   'nehru park': { x: 38, y: 44, label: 'Nehru Park' },
-  'guindy': { x: 28, y: 88, label: 'Guindy Industrial Sector' },
-  'velachery': { x: 62, y: 88, label: 'Velachery South Sector' },
-  'mylapore': { x: 68, y: 58, label: 'Mylapore Heritage Ward' },
+  'guindy': { x: 28, y: 88, label: 'Guindy Industrial' },
+  'velachery': { x: 62, y: 88, label: 'Velachery South' },
+  'mylapore': { x: 68, y: 58, label: 'Mylapore Ward' },
 };
 
 const DEPT_COLORS = {
   'Water Supply & Sewerage Board': '#0284c7',
   'Electricity & Power Distribution': '#d97706',
   'Municipal Corporation & Sanitation': '#16a34a',
-  'Public Works (PWD) & Roads': '#6366f1',
+  'Public Works (PWD) & Roads': '#4f46e5',
   'Traffic & Urban Mobility': '#ea580c',
   'Disaster Management': '#dc2626',
 };
@@ -42,7 +42,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
     }
 
     if (!pos) {
-      // Deterministic fallback based on ID
+      // Deterministic coordinate based on ID
       const charCode = (c.id || '').charCodeAt(0) || 65;
       const x = 30 + ((charCode * 17) % 45);
       const y = 30 + ((charCode * 23) % 45);
@@ -66,7 +66,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
       {/* Map Control Bar */}
       <div className="map-controls">
         <div className="map-legend-items">
-          <span className="legend-title">Incidents by Location & Department:</span>
+          <span className="legend-title">Filter by Department:</span>
           {Object.entries(DEPT_COLORS).map(([dept, color]) => (
             <button
               key={dept}
@@ -76,10 +76,10 @@ export default function MapView({ complaints, onSelectComplaint }) {
               style={{
                 borderColor: color,
                 backgroundColor: filterDept === dept ? color : 'transparent',
-                color: filterDept === dept ? '#fff' : '#1e293b',
+                color: filterDept === dept ? '#ffffff' : '#1e293b',
               }}
             >
-              <span className="legend-dot" style={{ backgroundColor: filterDept === dept ? '#fff' : color }} />
+              <span className="legend-dot" style={{ backgroundColor: filterDept === dept ? '#ffffff' : color }} />
               {dept.split(' ')[0]}
             </button>
           ))}
@@ -91,7 +91,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
             className={viewMode === 'PINS' ? 'active' : ''}
             onClick={() => setViewMode('PINS')}
           >
-            Pins View ({filteredIncidents.length})
+            Incident Pins ({filteredIncidents.length})
           </button>
           <button
             type="button"
@@ -106,7 +106,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
       {/* SVG Interactive City Map Canvas */}
       <div className="map-canvas-wrapper">
         <svg viewBox="0 0 100 100" className="city-svg-map">
-          {/* Background Grid & Roads */}
+          {/* Base Background & Grid */}
           <rect x="0" y="0" width="100" height="100" fill="#f8fafc" />
           
           {/* Water body */}
@@ -116,8 +116,8 @@ export default function MapView({ complaints, onSelectComplaint }) {
             stroke="#bae6fd"
             strokeWidth="0.5"
           />
-          <text x="94" y="50" fill="#0284c7" fontSize="2.5" transform="rotate(90, 94, 50)" textAnchor="middle" opacity="0.6">
-            Coastal Waterway
+          <text x="94" y="50" fill="#0284c7" fontSize="2.5" transform="rotate(90, 94, 50)" textAnchor="middle" opacity="0.7" fontWeight="600">
+            Bay Coastline
           </text>
 
           {/* Major arterial roads */}
@@ -129,17 +129,17 @@ export default function MapView({ complaints, onSelectComplaint }) {
           {/* Sector Landmark Labels */}
           {Object.entries(SECTOR_COORDINATES).map(([key, sector]) => (
             <g key={key} transform={`translate(${sector.x}, ${sector.y})`}>
-              <circle cx="0" cy="0" r="1.5" fill="#94a3b8" opacity="0.4" />
+              <circle cx="0" cy="0" r="1.2" fill="#94a3b8" opacity="0.5" />
               <text
                 x="0"
                 y="-2.5"
                 textAnchor="middle"
                 fontSize="2.2"
-                fontWeight="600"
-                fill="#64748b"
+                fontWeight="700"
+                fill="#475569"
                 className="sector-label"
               >
-                {sector.label.split(' ')[0]}
+                {sector.label}
               </text>
             </g>
           ))}
@@ -153,7 +153,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
                 cy={inc.pos.y}
                 r={inc.priority === 'P1_EMERGENCY' ? '12' : '8'}
                 fill={inc.priority === 'P1_EMERGENCY' ? '#ef4444' : '#f59e0b'}
-                opacity="0.25"
+                opacity="0.28"
                 className="heatmap-glow"
               />
             ))}
@@ -194,7 +194,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
                   strokeWidth="0.8"
                 />
 
-                {/* Priority / Hazard Badge icon */}
+                {/* Priority Icon */}
                 {isEmergency && (
                   <text x="0" y="0.8" textAnchor="middle" fontSize="1.8" fill="#ffffff" fontWeight="bold">
                     !
@@ -205,25 +205,26 @@ export default function MapView({ complaints, onSelectComplaint }) {
           })}
         </svg>
 
-        {/* Selected Incident Floating Detail Card */}
+        {/* Selected Incident Floating Detail Popover */}
         {selectedPin && (
           <div className="map-pin-popover">
             <div className="popover-header">
-              <span className="popover-id">{selectedPin.complaint_number}</span>
+              <span className="popover-id">#{selectedPin.complaint_number}</span>
               <span className={`pill ${selectedPin.priority}`}>{selectedPin.priority?.replace('_', ' ')}</span>
               <button
                 type="button"
                 className="popover-close"
                 onClick={() => setSelectedPin(null)}
+                aria-label="Close Popover"
               >
                 ×
               </button>
             </div>
             <h4 className="popover-summary">{selectedPin.summary}</h4>
             <div className="popover-meta">
-              <span><strong>Dept:</strong> {selectedPin.department}</span>
-              <span><strong>Landmark:</strong> {selectedPin.location_text || 'Awaiting location'}</span>
-              <span><strong>Hazard Score:</strong> {selectedPin.hazard_risk_score || 50}/100</span>
+              <span><strong>Department:</strong> {selectedPin.department}</span>
+              <span><strong>Landmark:</strong> {selectedPin.location_text || 'Awaiting location reply'}</span>
+              <span><strong>Hazard Risk:</strong> {selectedPin.hazard_risk_score || 50}/100</span>
               <span><strong>Status:</strong> {selectedPin.status?.replace('_', ' ')}</span>
             </div>
             <div className="popover-actions">
@@ -235,7 +236,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
                   setSelectedPin(null);
                 }}
               >
-                Open Full Record Audit →
+                Open Full Incident Record →
               </button>
             </div>
           </div>
@@ -243,7 +244,7 @@ export default function MapView({ complaints, onSelectComplaint }) {
       </div>
 
       <div className="map-footer-hint">
-        <span>💡 Click any pin on the map to view instant incident summary and audit timeline.</span>
+        <span>💡 Click any incident pin on the map to inspect summary and open full record.</span>
         <span>Showing {filteredIncidents.length} complaints</span>
       </div>
     </div>

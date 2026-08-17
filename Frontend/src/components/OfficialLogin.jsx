@@ -5,7 +5,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const OFFICIAL_PROFILES = [
   {
     role: 'HEAD',
-    title: 'District Head Office',
+    title: 'AI Complaint Manager',
     subtitle: 'Admin Overall Dashboard (9A) · All Departments & Analytics',
     username: 'head_admin',
     password: 'Head@123',
@@ -78,7 +78,7 @@ const OFFICIAL_PROFILES = [
 export default function OfficialLogin({ onLogin, onSwitchToSimulation }) {
   const [username, setUsername] = useState('head_admin');
   const [password, setPassword] = useState('Head@123');
-  const [selectedRoleTitle, setSelectedRoleTitle] = useState('District Head Office');
+  const [selectedRoleTitle, setSelectedRoleTitle] = useState('AI Complaint Manager');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
