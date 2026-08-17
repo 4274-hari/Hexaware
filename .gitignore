@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 stt/recordings/
+Frontend/node_modules/
+Frontend/dist/
+backend/data/recordings/

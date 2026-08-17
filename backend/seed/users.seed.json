@@ -1,0 +1,10 @@
+[
+  {"username":"head_admin","password":"Head@123","role":"HEAD","department":null,"name":"District Head Office","active":true},
+  {"username":"simulator_demo","password":"Sim@123","role":"SIMULATOR","department":null,"name":"Simulation Operator","active":true},
+  {"username":"sanitation_officer","password":"San@123","role":"DEPARTMENT","department":"Municipal Corporation & Sanitation","name":"Sanitation Officer","active":true},
+  {"username":"pwd_officer","password":"Pwd@123","role":"DEPARTMENT","department":"Public Works (PWD) & Roads","name":"PWD Officer","active":true},
+  {"username":"water_officer","password":"Water@123","role":"DEPARTMENT","department":"Water Supply & Sewerage Board","name":"Water Board Officer","active":true},
+  {"username":"electricity_officer","password":"Power@123","role":"DEPARTMENT","department":"Electricity & Power Distribution","name":"Electricity Officer","active":true},
+  {"username":"traffic_officer","password":"Traffic@123","role":"DEPARTMENT","department":"Traffic & Urban Mobility","name":"Traffic Officer","active":true},
+  {"username":"disaster_officer","password":"Disaster@123","role":"DEPARTMENT","department":"Disaster Management","name":"Disaster Management Officer","active":true}
+]

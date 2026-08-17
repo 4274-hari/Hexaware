@@ -39,13 +39,14 @@ VALID_DEPARTMENTS = {
     "Water Supply & Sewerage Board",
     "Electricity & Power Distribution",
     "Traffic & Urban Mobility",
+    "Disaster Management",
 }
 
 VALID_PRIORITIES = {"P1-Emergency", "P2-High", "P3-Medium", "P4-Low"}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STORE_FILE = os.path.join(BASE_DIR, "complaints_store.json")
-
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 GROQ_MODEL = "llama-3.3-70b-versatile"
 OLLAMA_DEFAULT_MODEL = "llama3.2:latest"
 OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
@@ -160,7 +161,19 @@ def _normalize_record(record: dict, transcript_text: str) -> dict:
 
 
 def process_grievance_text(transcript_text: str) -> dict:
+    record = classify_grievance_text(transcript_text)
+    if record is None:
+        return None
     complaint_id = next_complaint_id()
+    record["complaint_id"] = complaint_id
+    record["created_at"] = datetime.now(timezone.utc).isoformat()
+    if record["is_civic_related"]:
+        save_complaint_to_store(record)
+    return record
+
+
+def classify_grievance_text(transcript_text: str) -> dict | None:
+    """Classification-only API used by the FastAPI service; does not write JSON files."""
 
     try:
         if _provider() == "ollama":
@@ -186,13 +199,6 @@ def process_grievance_text(transcript_text: str) -> dict:
         return None
 
     record = _normalize_record(record, transcript_text)
-    record["complaint_id"] = complaint_id
-    record["created_at"] = datetime.now(timezone.utc).isoformat()
-
-    if not record["is_civic_related"]:
-        return record
-
-    save_complaint_to_store(record)
     return record
 
 
